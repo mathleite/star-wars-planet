@@ -1,0 +1,36 @@
+version: '3.5'
+
+services:
+  node:
+    image: node:16-alpine
+    volumes:
+      - .:/var/www/app
+    ports:
+      - "80:80"
+    container_name: node
+    tty: true
+    working_dir: /var/www/app
+    depends_on:
+      - database
+    networks:
+      - db
+
+  database:
+    image: mongo
+    command: [--auth]
+    volumes:
+    - ./database/data:/data/db
+    - ./database/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DATABASE_PASSWD}
+    container_name: database
+    ports:
+      - "27017:27017"
+    networks:
+      - db
+
+networks:
+  db:
+    driver: bridge
